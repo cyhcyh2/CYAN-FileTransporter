@@ -1,0 +1,6 @@
+main-class: me.cyh2.cyan.filetransporter.Kernel
+pluginName: "CYAN-FileTransporter"
+version: 1.0-SNAPSHOT
+description: "CYAN的文件传送器awa"
+apiVersion: PRE-RELEASE-v1
+dependencies: [ "ModuLake-Login" ]
