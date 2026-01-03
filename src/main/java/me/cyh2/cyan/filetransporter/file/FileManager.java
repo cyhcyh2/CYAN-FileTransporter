@@ -176,20 +176,20 @@ public class FileManager {
      * @return 规范化后的文件对象。如果文件不存在、IO错误或路径非法（试图越权访问），则返回 null。
      */
     public File getUserFile(User user, String fileName) {
-        // 获取规范化后的绝对路径
-        File file = new File(getUserFilesFolder(user), fileName);
-        File canonicalFile;
         try {
-            canonicalFile = file.getCanonicalFile();
+            Path baseDir = getUserFilesFolder(user).toPath().toRealPath();
+            Path resolvedPath = baseDir.resolve(fileName).normalize();
+
+            // 确保解析后的路径仍在基础目录内
+            if (!resolvedPath.startsWith(baseDir)) {
+                return null;
+            }
+
+            // 转换为文件前进行最终规范化
+            return resolvedPath.toFile().getCanonicalFile();
         } catch (IOException e) {
             return null;
         }
-
-        // 检查规范化后的路径是否依然在 baseFolder 之内
-        if (!canonicalFile.toPath().startsWith(getUserFilesFolder(user).toPath())) {
-            return null; // 路径非法，可能是攻击
-        }
-        return canonicalFile;
     }
 
     public void deleteUserFile(User user, String fileName, Handler<AsyncResult<Boolean>> handler) {

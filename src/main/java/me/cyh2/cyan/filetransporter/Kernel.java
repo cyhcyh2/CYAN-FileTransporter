@@ -8,6 +8,7 @@ import com.eternalstarmc.modulake.api.plugin.PluginBase;
 import com.eternalstarmc.modulake.api.plugin.PluginManager;
 import com.eternalstarmc.modulake.login.user.UserManager;
 import me.cyh2.cyan.filetransporter.file.FileManager;
+import me.cyh2.cyan.filetransporter.routers.DownloadRouter;
 import me.cyh2.cyan.filetransporter.routers.FilesRouter;
 import org.slf4j.Logger;
 
@@ -35,8 +36,9 @@ public class Kernel extends AbsPlugin {
         arManager = getApiRouterManager();
         dataFolder = getDataFolder();
         userManager = UserManager.INSTANCE;
-        arManager.registerApiRouter(new FilesRouter());
         fileManager = FileManager.INSTANCE;
+        arManager.registerApiRouter(new FilesRouter());
+        arManager.registerApiRouter(new DownloadRouter());
         logger.info("CYAN-FileTransporter启动成功啦！");
     }
 

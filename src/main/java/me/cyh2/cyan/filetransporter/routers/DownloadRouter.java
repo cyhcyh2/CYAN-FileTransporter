@@ -5,13 +5,12 @@ import com.eternalstarmc.modulake.api.network.RoutingData;
 import com.eternalstarmc.modulake.login.user.Token;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.OpenOptions;
-import io.vertx.core.streams.Pump;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import me.cyh2.cyan.filetransporter.Kernel;
+import me.cyh2.cyan.filetransporter.utils.WebErrorUtils;
 
-import static com.eternalstarmc.modulake.api.StaticValues.VERTX;
+import java.io.File;
+
+import static com.eternalstarmc.modulake.api.StaticValues.GSON;
 
 
 /**
@@ -26,39 +25,43 @@ public class DownloadRouter extends ApiRouter {
 
     @Override
     public void handler(RoutingData routingData, HttpMethod httpMethod) {
+        var request = routingData.request();
         var response = routingData.response();
-        String tokenString = routingData.request().getFormAttribute("token");
+        String tokenString = request.getFormAttribute("token");
         if (tokenString == null) {
-            response.setStatusCode(401).end("Unauthorized: Invalid Token");
+            response
+                    .setStatusCode(400)
+                    .end(GSON.toJson(WebErrorUtils.generateErrorMessage("Invalid Request Body")));
             return;
         }
         Token token = Token.getToken(tokenString);
-        String filePath = routingData.request().getFormAttribute("filePath");
-        if (filePath == null || filePath.isEmpty()) {
-            response.setStatusCode(400).end("Bad Request: Missing filePath");
+        if (token == null) {
+            response
+                    .setStatusCode(401)
+                    .end(GSON.toJson(WebErrorUtils.generateErrorMessage("Invalid Token")));
             return;
         }
-        Path path = Paths.get(filePath).normalize();
-        if (!path.startsWith(Paths.get("你的文件存储根目录"))) {
-            response.setStatusCode(403).end("Forbidden: Invalid file path");
+        String filename = request.getFormAttribute("filename");
+        if (filename == null) {
+            response
+                    .setStatusCode(401)
+                    .end(GSON.toJson(WebErrorUtils.generateErrorMessage("Invalid Request Body")));
             return;
         }
-        FileSystem fs = VERTX.fileSystem();
-        if (!fs.exists(path.toString()).result()) {
-            response.setStatusCode(404).end("File Not Found");
-            return;
-        }
-        String fileName = path.getFileName().toString();
-        response.putHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
         response.putHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
-        fs.open(path.toString(), new OpenOptions(), res -> {
-            if (res.succeeded()) {
-                var asyncFile = res.result();
-                Pump.pump(asyncFile, response).start();
-                response.endHandler(v -> asyncFile.close());
-            } else {
-                response.setStatusCode(500).end("Error reading file");
+        response.putHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + filename + "\"");
+        File file = Kernel.fileManager.getUserFile(token.user(), filename);
+        response.sendFile(file.getPath())
+                .onComplete(v -> Kernel.logger.info("用户 {} 的文件 {} 传输完成！", token.user().getUsername(), filename))
+                .onFailure(e -> {
+            Kernel.logger.error("用户 {} 的文件 {} 传输过程中发生异常，", token.user().getUsername(), filename, e);
+            if (!response.ended()) {
+                response
+                        .setStatusCode(500)
+                        .end(GSON.toJson(WebErrorUtils.generateErrorMessage("File Transfer Failed")));
             }
+            routingData.context().fail(e);
         });
     }
 }
