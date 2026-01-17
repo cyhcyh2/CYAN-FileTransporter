@@ -14,7 +14,7 @@ import static com.eternalstarmc.modulake.api.StaticValues.GSON;
 
 
 /**
- * DownloadRouter - 文件列表路由
+ * DownloadRouter - 文件下载路由
  * @version 2025/12/28 (Create at 2025/12/28 JAVA 21)
  * @author CYAN-H(cyh2)
  */

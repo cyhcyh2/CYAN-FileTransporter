@@ -20,6 +20,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.eternalstarmc.modulake.api.StaticValues.GSON;
 import static com.eternalstarmc.modulake.api.StaticValues.VERTX;
 
+
+/**
+ * UploadRouter - 文件上传路由
+ * @version 2026/1/14 (Create at 2026/1/8 JAVA 21)
+ * @author CYAN-H(cyh2)
+ */
 public class UploadRouter extends ApiRouter {
     public UploadRouter() {
         super("upload", HttpMethod.POST);

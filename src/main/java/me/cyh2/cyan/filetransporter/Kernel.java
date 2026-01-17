@@ -1,11 +1,13 @@
 package me.cyh2.cyan.filetransporter;
 
+import com.eternalstarmc.modulake.api.ModuLake;
 import com.eternalstarmc.modulake.api.commands.CommandManager;
 import com.eternalstarmc.modulake.api.network.ApiRouterManager;
 import com.eternalstarmc.modulake.api.network.Server;
 import com.eternalstarmc.modulake.api.plugin.AbsPlugin;
 import com.eternalstarmc.modulake.api.plugin.PluginBase;
 import com.eternalstarmc.modulake.api.plugin.PluginManager;
+import com.eternalstarmc.modulake.api.utils.text.AsciiPrinter;
 import com.eternalstarmc.modulake.login.user.UserManager;
 import me.cyh2.cyan.filetransporter.file.FileManager;
 import me.cyh2.cyan.filetransporter.routers.DownloadRouter;
@@ -41,6 +43,8 @@ public class Kernel extends AbsPlugin {
         arManager.registerApiRouter(new FilesRouter());
         arManager.registerApiRouter(new DownloadRouter());
         arManager.registerApiRouter(new UploadRouter());
+        String CFT = AsciiPrinter.getAsciiString("CFT");
+        logger.info("\n{}Running on ModuLake {}", CFT.replaceAll("[\r\n]+$", ""), ModuLake.apiVersion);
         logger.info("CYAN-FileTransporter启动成功啦！");
     }
 
